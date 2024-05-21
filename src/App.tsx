@@ -1,23 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import { renderComponent } from "./components/render/renderComponent";
+import {
+  renderComponent,
+  renderElement,
+} from "./components/render/renderComponent";
 import { BiDotsVerticalRounded } from "react-icons/bi";
 import { useElements } from "./core";
+import { PropertyControl } from "./PropertyControl";
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  Group,
+  MantineProvider,
+  ScrollArea,
+  Stack,
+  rem,
+} from "@mantine/core";
+import { ElementController } from "./components/render/ElementController";
 
 function App() {
   const { elements, setElements } = useElements();
-  const project = {
-    name: "Graph API",
-    initials: "GA",
-    href: "#",
-    members: 16,
-    bgColor: "bg-pink-600",
-  };
-  const classNames = (...classes) => {
-    return classes.filter(Boolean).join(" ");
-  };
+
   const locateElement = (id: string) => {
     let v;
     Object.keys(elements).forEach((key) => {
@@ -62,41 +69,127 @@ function App() {
     });
     return v;
   };
-  // console.log()
-
-  useEffect(() => {
-    console.log(locateElement("title"))
-    console.log(
-       
-
-    )
-  }, []);
+  console.log(elements);
 
   return (
-    <div className="flex flex-col min-h-screen p-4">
-      <ul className="mt-3 grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <li key={project.name} className="col-span-1 flex shadow-sm rounded-md">
-          <input
-            type="text"
-            placeholder="change card title"
-            value={"Graph API"}
-            onChange={(e) => {
-              const foundElement = elements;
-              console.log(foundElement);
-              if (foundElement) {
-                foundElement.children = e.target.value;
-                setElements(elements);
-              }
+    <MantineProvider withGlobalStyles withNormalizeCSS>
+      <Flex pos={"relative"}>
+        <Box
+          pos="fixed"
+          sx={{
+            width: "100%",
+            maxWidth: "300px",
+            height: "100vh",
+            zIndex: 100,
+            backgroundColor: "white",
+          }}
+        >
+          <Stack>
+            <ScrollArea.Autosize mah={600}>
+              {elements.map((element) => {
+                return (
+                  <PropertyControl
+                    key={element.id}
+                    element={element}
+                    setElements={(element) => {
+                      const newElements = elements.map((el) => {
+                        if (el.id === element.id) {
+                          return element;
+                        }
+                        return el;
+                      });
+                      setElements(newElements);
+                    }}
+                  />
+                );
+              })}
+            </ScrollArea.Autosize>
+          </Stack>
+          <Group>
+            <Button
+              onClick={() => {
+                setElements([
+                  ...elements,
+                  {
+                    type: "content",
+                    id: Math.random().toString(36).substr(2, 9),
+                    content: {
+                      text: {
+                        id: Math.random().toString(36).substr(2, 9),
+                        content: "Hello World",
+                        hide: false,
+                      },
+                      media: {
+                        id: Math.random().toString(36).substr(2, 9),
+                        src: "https://via.placeholder.com/150",
+                        alt: "placeholder",
+                        type: "image",
+                        hide: false,
+                      },
+                    },
+                  },
+                ]);
+              }}
+            >
+              Add Content
+            </Button>
+            <Button
+              onClick={() => {
+                setElements([
+                  ...elements,
+                  {
+                    type: "divider",
+                    id: Math.random().toString(36).substr(2, 9),
+                    divider: {
+                      id: Math.random().toString(36).substr(2, 9),
+                      type: "line",
+                    },
+                  },
+                ]);
+              }}
+            >
+              Add Divider
+            </Button>
+          </Group>
+        </Box>
+        <Box
+          bg="gray.1"
+          pos={"relative"}
+          sx={{
+            width: "100%",
+            maxWidth: "900px",
+            margin: "0 auto",
+          }}
+        >
+          <Box
+            sx={{
+              maxWidth: "calc(100% - 300px)",
+              margin: "0 auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+              width: "100%",
             }}
-          />
-        </li>
-        {
-          elements.map((element) => {
-            return renderComponent(element);
-          })
-        }
-      </ul>
-    </div>
+          >
+            {elements.map((element) => {
+              return renderElement(element);
+            })}
+          </Box>
+        </Box>
+        <Box
+          pos={"fixed"}
+          right={0}
+          bg="white"
+          sx={{
+            width: "100%",
+            height: "100vh",
+            maxWidth: "300px",
+          }}
+        >
+          <ElementController />
+        </Box>
+      </Flex>
+    </MantineProvider>
   );
 }
 
